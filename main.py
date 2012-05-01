@@ -14,40 +14,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import os
+import re
 import webapp2
 import logging
 import jinja2
-import cgi
-import os
-import re
+
+from google.appengine.ext import db
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
-jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
-                               autoescape = True)
-
-def render_str(template, **params):
-    t = jinja_env.get_template(template)
-    return t.render(params)
+jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir), autoescape = True)
 
 
 class BaseHandler(webapp2.RequestHandler):
-    links = dict(homeworks = [])
-    
-    #def __init__(self, request, response, **kwargs):
     def __init__(self, request, response):
-        #logging.info(kwargs)
-        #super(BaseHandler, self).__init__(request,response)
-        #if kwargs and kwargs['href'] and kwargs['caption']:
-        #    self.links['homeworks'].append(dict(href=path, caption=caption))
-        self.initialize(request, response)
-        self.links['homeworks'].append(dict(href="/unit2/rot13",caption="Unit2: ROT13"))
-        self.links['homeworks'].append(dict(href="/unit2/signup",caption="Unit2: SignUp"))
-
-    def render(self, template, **kw):
-        self.response.out.write(render_str(template, **kw))
+        self.initialize(request, response)		
 
     def write(self, *a, **kw):
         self.response.out.write(*a, **kw)
+
+    def render_str(self, template, **params):
+        t = jinja_env.get_template(template)
+        return t.render(params)
+
+    def render(self, template, **kw):
+        self.write(self.render_str(template, **kw))
+
 
 
 class Rot13Page(BaseHandler):
@@ -119,8 +111,12 @@ class SignUpWelcomePage(BaseHandler):
 
 class RootPage(BaseHandler):
     def get(self):        
-        self.render('index.html', **self.links)
+        self.render('index.html', **links)
 
+links = dict(homeworks = [])
+links['homeworks'].append(dict(href="/unit2/rot13",caption="Unit2: ROT13"))
+links['homeworks'].append(dict(href="/unit2/signup",caption="Unit2: SignUp"))
+		
 app = webapp2.WSGIApplication([('/',RootPage),
                                ('/unit2/rot13',Rot13Page),
                                ('/unit2/signup',SignUpPage),
