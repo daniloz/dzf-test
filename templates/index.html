@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>My Test Playground</title>
+        <style type="text/css">
+            h2 { padding-left:20px; }
+            ul { padding-left:60px; }
+			li { margin-bottom:5px; }
+        </style>
+    </head>
+    
+    <body>
+        <h1>Welcome to my test playground</h1>
+        <h2>Udacity CS253 Homeworks</h2>
+        <ul>
+			{% for item in homeworks %}
+			<li><a href="{{ item.href }}">{{ item.caption }}</a></li>
+			{% endfor %}
+        </ul>
+    </body>
+</html>
