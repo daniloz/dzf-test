@@ -15,6 +15,27 @@ h2 {
     margin-bottom: 20px;
 }
 
+.menu-area {
+    font-size: 13px;
+    color: gray;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.menu-link {
+    color: gray;
+    text-decoration: none;
+}
+
+.menu-link:visited {
+    color: gray;
+}
+
+.menu-link:hover {
+    text-decoration: underline;
+}
+
 .error {
     color: red;
 }

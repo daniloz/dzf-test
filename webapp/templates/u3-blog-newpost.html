@@ -15,12 +15,12 @@
 
 		<form method="post" action="">
 			<label>
-				<div>subject</div> <input type="text" name="subject" value="">
+				<div>subject</div> <input type="text" name="subject" value="{{title}}">
 			</label> <label>
-				<div>blog</div> <textarea name="content" cols="" rows=""></textarea>
+				<div>blog</div> <textarea name="content" cols="" rows="">{{body}}</textarea>
 			</label>
 
-			<div class="error"></div>
+			<div class="error">{{error}}</div>
 
 			<input type="submit">
 		</form>

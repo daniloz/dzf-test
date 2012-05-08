@@ -1,0 +1,14 @@
+{% extends "u3-blog-base.html" %}
+
+{% block menu %}
+	<div class="menu-area">
+		<a class="menu-link" href="/unit3/blog/newpost">new post</a>
+	</div>		
+{% endblock %}
+
+{% block content %}
+	{% for post in posts %}
+		{{ post.render() | safe }}
+		<br> <br>
+	{% endfor %}
+{% endblock %}
