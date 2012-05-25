@@ -3,6 +3,7 @@ import webapp2
 import handlers_root
 import handlers_unit2
 import handlers_unit3
+import handlers_unit4
 
 SITE_URLS = [# Root Page
              webapp2.Route(r'/', handlers_root.RootPage),
@@ -13,5 +14,8 @@ SITE_URLS = [# Root Page
              # Unit 3
              webapp2.Route(r'/unit3/blog', handlers_unit3.BlogPage),
              webapp2.Route(r'/unit3/blog/<post_id:\d{1,}>', handlers_unit3.BlogPost),
-             webapp2.Route(r'/unit3/blog/newpost', handlers_unit3.NewPost)
+             webapp2.Route(r'/unit3/blog/newpost', handlers_unit3.NewPost),
+             # Unit 4
+             webapp2.Route(r'/unit4/signup', handlers_unit4.SignUpPage),
+             webapp2.Route(r'/unit4/signup/welcome', handlers_unit4.SignUpWelcomePage),
 ]
