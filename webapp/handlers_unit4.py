@@ -7,6 +7,8 @@ import handlers_root
 from google.appengine.ext import db
 
 handlers_root.links['homeworks'].append(dict(href = "/unit4/signup", caption = "Unit4: SignUp"))
+handlers_root.links['homeworks'].append(dict(href = "/unit4/login", caption = "Unit4: Login"))
+handlers_root.links['homeworks'].append(dict(href = "/unit4/logout", caption = "Unit4: Logout"))
 
 COOKIE_SECRET = "CookieSecret"
 
@@ -53,7 +55,7 @@ class SignUpPage(BaseHandler):
         password = self.request.get('password')
         verify = self.request.get('verify')
         email = self.request.get('email')
-        
+
         logging.info('username = %s, password = %s, verify = %s, email = %s' % (username, password, verify, email))
 
         params = dict(username = username,
@@ -79,7 +81,7 @@ class SignUpPage(BaseHandler):
         userKey = User.all();
         userKey.ancestor(user_key())
         userKey.filter('username =', username)
-        
+
         existingUser = userKey.get()
         logging.info("Got user: %s" % existingUser)
         if existingUser:
@@ -100,19 +102,66 @@ class SignUpPage(BaseHandler):
             cookie_value = make_secure_val(str(userkey))
             logging.info("COOKIE: user=%s" % cookie_value)
             self.response.headers.add_header("Set-Cookie", "user_id=%s; Path=/" % cookie_value)
-            self.redirect('/unit4/signup/welcome')
+            self.redirect('/unit4/welcome')
+
+class LogoutPage(BaseHandler):
+    def get(self):
+            self.response.headers.add_header("Set-Cookie", "user_id=; Path=/")
+            self.redirect('/unit4/signup')
+
+class LoginPage(BaseHandler):
+    def get(self):
+        self.render('u4-login-form.html')
+
+    def post(self):
+        username = self.request.get('username')
+        password = self.request.get('password')
+
+        logging.info('username = %s, password = %s' % (username, password))
+
+        has_error = False
+
+        if not validate_username(username):
+            has_error = True
+
+        if not validate_password(password):
+            has_error = True
+
+        userKey = User.all();
+        userKey.ancestor(user_key())
+        userKey.filter('username =', username)
+
+        existingUser = userKey.get()
+        logging.info("Got user: %s" % existingUser)
+        if not existingUser:
+            has_error = True
+        else:
+            if password <> existingUser.password:
+                has_error = True
+
+        if has_error:
+            error = "Invalid Login."
+            self.render('u4-login-form.html', login_error = error)
+        else:
+            # set a cookie on the user's side
+            userkey = existingUser.key().id()
+
+            cookie_value = make_secure_val(str(userkey))
+            logging.info("COOKIE: user=%s" % cookie_value)
+            self.response.headers.add_header("Set-Cookie", "user_id=%s; Path=/" % cookie_value)
+            self.redirect('/unit4/welcome')
 
 class SignUpWelcomePage(BaseHandler):
     def get(self):
         username = None
         user_cookie = self.request.cookies.get('user_id')
         userKey = check_secure_val(user_cookie)
-        
+
         if userKey:
             key = db.Key.from_path('User', int(userKey), parent = user_key())
             user = db.get(key)
             username = user.username
-             
+
         if username and validate_username(username):
             self.render('u4-signup-welcome.html', username = username)
         else:

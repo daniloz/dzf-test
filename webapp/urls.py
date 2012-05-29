@@ -17,5 +17,7 @@ SITE_URLS = [# Root Page
              webapp2.Route(r'/unit3/blog/newpost', handlers_unit3.NewPost),
              # Unit 4
              webapp2.Route(r'/unit4/signup', handlers_unit4.SignUpPage),
-             webapp2.Route(r'/unit4/signup/welcome', handlers_unit4.SignUpWelcomePage),
+             webapp2.Route(r'/unit4/login', handlers_unit4.LoginPage),
+             webapp2.Route(r'/unit4/logout', handlers_unit4.LogoutPage),
+             webapp2.Route(r'/unit4/welcome', handlers_unit4.SignUpWelcomePage),
 ]
