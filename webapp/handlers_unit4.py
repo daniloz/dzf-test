@@ -1,10 +1,14 @@
 import re
 import logging
+import hmac
 from base_handler import BaseHandler
 import handlers_root
+
 from google.appengine.ext import db
 
 handlers_root.links['homeworks'].append(dict(href = "/unit4/signup", caption = "Unit4: SignUp"))
+
+COOKIE_SECRET = "CookieSecret"
 
 USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
 def validate_username(username):
@@ -17,6 +21,17 @@ def validate_password(password):
 EMAIL_RE = re.compile(r"^[\S]+@[\S]+\.[\S]+$")
 def validate_email(email):
     return not email or EMAIL_RE.match(email)
+
+def hash_str(s):
+    return hmac.new(COOKIE_SECRET, s).hexdigest()
+
+def make_secure_val(s):
+    return "%s|%s" % (s, hash_str(s))
+
+def check_secure_val(h):
+    val = h.split('|')[0]
+    if h == make_secure_val(val):
+        return val
 
 def user_key(name = 'default'):
     return db.Key.from_path('users', name)
@@ -38,6 +53,8 @@ class SignUpPage(BaseHandler):
         password = self.request.get('password')
         verify = self.request.get('verify')
         email = self.request.get('email')
+        
+        logging.info('username = %s, password = %s, verify = %s, email = %s' % (username, password, verify, email))
 
         params = dict(username = username,
                       email = email)
@@ -59,8 +76,12 @@ class SignUpPage(BaseHandler):
             params['email_error'] = "That's not a valid email."
             has_error = True
 
-        query = "SELECT * FROM User WHERE username = '%s'" % username
-        existingUser = db.GqlQuery(query)
+        userKey = User.all();
+        userKey.ancestor(user_key())
+        userKey.filter('username =', username)
+        
+        existingUser = userKey.get()
+        logging.info("Got user: %s" % existingUser)
         if existingUser:
             params['username_error'] = "The user already exists."
             has_error = True
@@ -73,18 +94,26 @@ class SignUpPage(BaseHandler):
             newUser = User(parent = user_key(),
                            username = username, email = email, password = password)
             newUser.put()
+            userkey = newUser.key().id()
 
             # set a cookie on the user's side
-            # TODO: Do cookie hashing
-            cookie_value = str(username)
+            cookie_value = make_secure_val(str(userkey))
             logging.info("COOKIE: user=%s" % cookie_value)
-            self.response.headers.add_header("Set-Cookie", "user=%s; Path=/" % cookie_value)
+            self.response.headers.add_header("Set-Cookie", "user_id=%s; Path=/" % cookie_value)
             self.redirect('/unit4/signup/welcome')
 
 class SignUpWelcomePage(BaseHandler):
     def get(self):
-        username = self.request.cookies.get('user')
-        if validate_username(username):
+        username = None
+        user_cookie = self.request.cookies.get('user_id')
+        userKey = check_secure_val(user_cookie)
+        
+        if userKey:
+            key = db.Key.from_path('User', int(userKey), parent = user_key())
+            user = db.get(key)
+            username = user.username
+             
+        if username and validate_username(username):
             self.render('u4-signup-welcome.html', username = username)
         else:
             self.redirect('/unit4/signup')
